@@ -6,6 +6,7 @@
 %% API
 -export([date_from_string/2, datetime_from_string/2]).
 -export([to_string/2]).
+-export([date_trunc/2]).
 -export([serialize/1, deserialize/1, raw/1]).
 
 %% MACROS
