@@ -5,7 +5,8 @@
 
 %% API
 -export([date_from_string/2, datetime_from_string/2]).
--export([serialize/1, deserialize/1]).
+-export([to_string/2]).
+-export([serialize/1, deserialize/1, raw/1]).
 
 %% MACROS
 -define(l2i(L), list_to_integer(L)).
@@ -66,6 +67,9 @@ serialize({dt, N, utc}) ->
 
 deserialize(<<N:64/little-integer>>) ->
     {dt, N, utc}.
+
+raw({dt, N, utc}) ->
+    N.
 
 %%
 %% INTERNALS
