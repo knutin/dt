@@ -5,6 +5,7 @@
 
 %% API
 -export([date_from_string/2, datetime_from_string/2]).
+-export([serialize/1, deserialize/1]).
 
 %% MACROS
 -define(l2i(L), list_to_integer(L)).
@@ -60,11 +61,11 @@ date_trunc("day", Timestamp) ->
     datetime_to_timestamp({YMD, {0, 0, 0, 0}}).
 
 
-serialize({timestamp, N, utc}) ->
+serialize({dt, N, utc}) ->
     <<N:64/little-integer>>.
 
 deserialize(<<N:64/little-integer>>) ->
-    {timestamp, N, utc}.
+    {dt, N, utc}.
 
 %%
 %% INTERNALS
@@ -118,11 +119,15 @@ do_to_string({_, {_, Mi, _, _}} = DateTime, "MI" ++ Format) ->
 do_to_string({_, {_, _, S, _}} = DateTime, "SS" ++ Format) ->
     [io_lib:format("~2..0w", [S]) | do_to_string(DateTime, Format)];
 
+do_to_string(DateTime, "epoch") ->
+    {dt, T, utc} = datetime_to_timestamp(DateTime),
+    [?i2l(T)];
+
 %% Separators
 do_to_string(DateTime, [$- | Format]) -> [$- | do_to_string(DateTime, Format)];
 do_to_string(DateTime, [$  | Format]) -> [$  | do_to_string(DateTime, Format)];
 do_to_string(DateTime, [$: | Format]) -> [$: | do_to_string(DateTime, Format)];
-    
+
 do_to_string(_, []) ->
     [].
 
@@ -153,7 +158,7 @@ timestamp_to_datetime({dt, Timestamp, utc}) ->
     {YMD, {Hour, Minute, Second}} =
         calendar:gregorian_seconds_to_datetime(Seconds),
     {YMD, {Hour, Minute, Second, MicroSecond}}.
-    
+
 
 datetime_to_timestamp({{Year, Month, Date}, {Hour, Minute, Second}}) ->
     datetime_to_timestamp({{Year, Month, Date}, {Hour, Minute, Second, 0}});
@@ -165,7 +170,7 @@ datetime_to_timestamp({{Year, Month, Date}, {Hour, Minute, Second, MicroSeconds}
     Timestamp = ((GregSeconds - ?GREGORIAN_EPOCH) * 1000000)
         + MicroSeconds,
     {dt, Timestamp, utc}.
-    
+
 
 
 
@@ -197,10 +202,14 @@ date_trunc_test() ->
     DayStart = datetime_from_string("2015-01-01 00:00:00", {iso, mdy}),
 
     T = datetime_from_string("2015-01-01 01:02:03", {iso, mdy}),
-    
+
     ?assertEqual("2015-01-01 00:00:00",
                  to_string(date_trunc("day", T), "YYYY-MM-DD HH:MI:SS")),
-
     ?assertEqual(DayStart, date_trunc("day", T)).
-                 
 
+
+serialization_test() ->
+    T = datetime_from_string("2015-01-02 03:04:05", {iso, mdy}),
+    ?assertEqual("1420167845000000", to_string(T, "epoch")),
+    ?assertEqual(<<1420167845000000:64/little-integer>>, serialize(T)),
+    ?assertEqual(T, deserialize(serialize(T))).
