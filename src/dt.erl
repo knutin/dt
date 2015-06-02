@@ -51,7 +51,7 @@ datetime_from_string(String, {iso, mdy}) ->
 
 
 
-to_string(Timestamp, Format) ->
+to_string(Format, Timestamp) ->
     DateTime = timestamp_to_datetime(Timestamp),
     lists:flatten(do_to_string(DateTime, Format)).
 
@@ -200,7 +200,7 @@ parse_test() ->
 format_test() ->
     T = datetime_from_string("2015-01-01 00:00:00", {iso, mdy}),
     ?assertEqual("2015-01-01",
-                 to_string(T, "YYYY-MM-DD")).
+                 to_string("YYYY-MM-DD", T)).
 
 date_trunc_test() ->
     DayStart = datetime_from_string("2015-01-01 00:00:00", {iso, mdy}),
@@ -208,12 +208,12 @@ date_trunc_test() ->
     T = datetime_from_string("2015-01-01 01:02:03", {iso, mdy}),
 
     ?assertEqual("2015-01-01 00:00:00",
-                 to_string(date_trunc("day", T), "YYYY-MM-DD HH:MI:SS")),
+                 to_string("YYYY-MM-DD HH:MI:SS", date_trunc("day", T))),
     ?assertEqual(DayStart, date_trunc("day", T)).
 
 
 serialization_test() ->
     T = datetime_from_string("2015-01-02 03:04:05", {iso, mdy}),
-    ?assertEqual("1420167845000000", to_string(T, "epoch")),
+    ?assertEqual("1420167845000000", to_string("epoch", T)),
     ?assertEqual(<<1420167845000000:64/little-integer>>, serialize(T)),
     ?assertEqual(T, deserialize(serialize(T))).
