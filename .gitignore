@@ -1,3 +1,7 @@
 .eunit
 .rebar
 *~
+/_build/
+/ebin/
+/src/dt_lexer.erl
+/src/dt_parser.erl
