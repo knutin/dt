@@ -61,9 +61,14 @@ date_from_string(String, {iso, mdy}) ->
 -spec datetime_from_string(datetime_string(), datestyle()) -> timestamp().
 datetime_from_string(String, {iso, mdy}) ->
     first_success(
-      [fun () ->
+      [
+       fun () ->
                {ok, [Y, M, D, H, Mi, S]} =  parse(String, "YYYY-MM-DD HH:MI:SS"),
                datetime_to_timestamp({{Y, M, D}, {H, Mi, S}})
+       end,
+       fun () ->
+               {ok, [Y, M, D]} =  parse(String, "YYYY-MM-DD"),
+               datetime_to_timestamp({{Y, M, D}, {0, 0, 0}})
        end,
        fun () ->
                {ok, [Y, M, D, H, Mi, S]} =  parse(String, "YYYYMMDDTHHMISS"),
@@ -72,7 +77,8 @@ datetime_from_string(String, {iso, mdy}) ->
        fun () ->
                {ok, [Epoch]} = parse(String, "epoch"),
                {dt, Epoch * 1000000, utc}
-       end]).
+       end
+      ]).
 
 
 -spec interval_from_string(interval_string()) -> interval().
@@ -271,7 +277,10 @@ parse_test() ->
                  datetime_from_string("1420070400", {iso, mdy})),
 
     ?assertEqual({dt, 1420070400000000, utc},
-                 date_from_string("2015-01-01", {iso, mdy})).
+                 date_from_string("2015-01-01", {iso, mdy})),
+
+    ?assertEqual("2015-01-01T00:00:00Z",
+                 to_string("iso8601", datetime_from_string("2015-01-01", {iso, mdy}))).
 
 format_test() ->
     T = datetime_from_string("2015-01-01 00:00:00", {iso, mdy}),
@@ -314,6 +323,6 @@ add_test() ->
                  to_string("iso8601", '+'(T, interval_from_string("90 days")))).
 
 subtract_test() ->
-    T = datetime_from_string("2015-01-02 00:00:00", {iso, mdy}),
-    ?assertEqual("2015-01-01T00:00:00Z",
-                 to_string("iso8601", '-'(T, interval_from_string("1 day")))).
+    T = datetime_from_string("2015-01-01 00:00:00", {iso, mdy}),
+    ?assertEqual("2014-12-01T00:00:00Z",
+                 to_string("iso8601", '-'(T, interval_from_string("31 days")))).
