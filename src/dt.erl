@@ -6,6 +6,7 @@
 %% API
 -export([date_from_string/2
         ,datetime_from_string/2
+        ,datetime_from_epoch_seconds/1
         ,interval_from_string/1
         ,to_string/2
         ]).
@@ -79,6 +80,9 @@ datetime_from_string(String, {iso, mdy}) ->
                {dt, Epoch * 1000000, utc}
        end
       ]).
+
+datetime_from_epoch_seconds(EpochSeconds) when is_integer(EpochSeconds) ->
+    {dt, EpochSeconds*1000000, utc}.
 
 
 -spec interval_from_string(interval_string()) -> interval().
@@ -278,6 +282,9 @@ parse_test() ->
 
     ?assertEqual({dt, 1420070400000000, utc},
                  date_from_string("2015-01-01", {iso, mdy})),
+
+    ?assertEqual({dt, 1420070400000000, utc},
+                 datetime_from_epoch_seconds(1420070400)),
 
     ?assertEqual("2015-01-01T00:00:00Z",
                  to_string("iso8601", datetime_from_string("2015-01-01", {iso, mdy}))).
