@@ -116,7 +116,10 @@ to_string(Format, Timestamp) ->
 
 date_trunc("day", Timestamp) ->
     {YMD, _} = timestamp_to_datetime(Timestamp),
-    datetime_to_timestamp({YMD, {0, 0, 0, 0}}).
+    datetime_to_timestamp({YMD, {0, 0, 0, 0}});
+date_trunc("month", Timestamp) ->
+    {{Y, M, _}, _} = timestamp_to_datetime(Timestamp),
+    datetime_to_timestamp({{Y, M, 1}, {0, 0, 0, 0}}).
 
 
 '+'({dt, T, utc}, {interval, _, _, _} = I) ->
@@ -295,13 +298,15 @@ format_test() ->
     ?assertEqual("2015-01-01T00:00:00Z", to_string("iso8601", T)).
 
 date_trunc_test() ->
-    DayStart = datetime_from_string("2015-01-01 00:00:00", {iso, mdy}),
+    DayStart = datetime_from_string("2015-01-02 00:00:00", {iso, mdy}),
 
-    T = datetime_from_string("2015-01-01 01:02:03", {iso, mdy}),
+    T = datetime_from_string("2015-01-02 01:02:03", {iso, mdy}),
 
-    ?assertEqual("2015-01-01 00:00:00",
+    ?assertEqual("2015-01-02 00:00:00",
                  to_string("YYYY-MM-DD HH:MI:SS", date_trunc("day", T))),
-    ?assertEqual(DayStart, date_trunc("day", T)).
+    ?assertEqual(DayStart, date_trunc("day", T)),
+    ?assertEqual("2015-01-01T00:00:00Z",
+                 to_string("iso8601", date_trunc("month", T))).
 
 
 serialization_test() ->
