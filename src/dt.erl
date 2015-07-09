@@ -9,6 +9,10 @@
         ,datetime_from_epoch_seconds/1
         ,interval_from_string/1
         ,to_string/2
+        ,date_eq/2
+        ,date_le/2
+        ,datetime_eq/2
+        ,datetime_le/2
         ]).
 
 -export([date_trunc/2
@@ -18,7 +22,8 @@
 
 -export([serialize/1
         ,deserialize/1
-        , raw/1]).
+        ,raw/1
+        ]).
 
 %% MACROS
 -define(l2i(L), list_to_integer(L)).
@@ -127,6 +132,13 @@ date_trunc("month", Timestamp) ->
 
 '-'({dt, T, utc}, {interval, _, _, _} = I) ->
     {dt, T - interval_to_seconds(I) * 1000000, utc}.
+
+
+date_eq({dt, A, utc}, {dt, B, utc}) -> A =:= B.
+date_le({dt, A, utc}, {dt, B, utc}) -> A =< B.
+
+datetime_eq({dt, A, utc}, {dt, B, utc}) -> A =:= B.
+datetime_le({dt, A, utc}, {dt, B, utc}) -> A =< B.
 
 
 
