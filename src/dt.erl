@@ -73,6 +73,10 @@ datetime_from_string(String, {iso, mdy}) ->
                datetime_to_timestamp({{Y, M, D}, {H, Mi, S}})
        end,
        fun () ->
+               {ok, [Y, M, D, H, Mi, S]} =  parse(String, "YYYY-MM-DDTHH:MI:SSZ"),
+               datetime_to_timestamp({{Y, M, D}, {H, Mi, S}})
+       end,
+       fun () ->
                {ok, [Y, M, D]} =  parse(String, "YYYY-MM-DD"),
                datetime_to_timestamp({{Y, M, D}, {0, 0, 0}})
        end,
@@ -181,6 +185,7 @@ do_parse(S, "epoch") ->
 
 %% Separators
 do_parse([$T | String], [$T | Format]) -> do_parse(String, Format);
+do_parse([$Z | String], [$Z | Format]) -> do_parse(String, Format);
 do_parse([$- | String], [$- | Format]) -> do_parse(String, Format);
 do_parse([$: | String], [$: | Format]) -> do_parse(String, Format);
 do_parse([$  | String], [$  | Format]) -> do_parse(String, Format);
@@ -288,6 +293,9 @@ datetime_to_timestamp({{Year, Month, Date}, {Hour, Minute, Second, MicroSeconds}
 parse_test() ->
     ?assertEqual({dt, 1420070400000000, utc},
                  datetime_from_string("2015-01-01 00:00:00", {iso, mdy})),
+
+    ?assertEqual({dt, 1420070400000000, utc},
+                 datetime_from_string("2015-01-01T00:00:00Z", {iso, mdy})),
 
     ?assertEqual({dt, 1420070400000000, utc},
                  datetime_from_string("20150101T000000", {iso, mdy})),
